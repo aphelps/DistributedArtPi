@@ -1,0 +1,37 @@
+- hosts: servers
+  user: pi
+  vars:
+    # Created with: python -c "from passlib.hash import sha512_crypt; import getpass; print sha512_crypt.encrypt('abc123')"
+    password: $6$rounds=656000$eHARdd2YOlLGR1fM$7B89jvyfbbU2y8UUlEgfcZ8v.oUdKPjhXnWifoQidnGbskspMGSL0fxpi0wh27RyF8lfGEYGI4jGTDitC4kow.
+
+    local_username: "amp"
+
+    # Get the local user's public ssh key
+    user_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+  tasks:
+    - name: Getting the current user name
+      local_action: command whoami
+      register: local_username
+      sudo: false
+
+    - name: Creating user {{ local_username }}
+      user: name={{ local_username}}  password={{password}} groups="sudo"
+
+    - authorized_key:
+       user: "{{ local_username }}"
+       key:  "{{ user_key }}"
+     
+    - authorized_key:
+       user: pi
+       key:  "{{ user_key }}"
+
+    - user: name=da password={{password}} groups="sudo"
+
+    - authorized_key:
+        user: da
+        key:  "{{ lookup('file', 'da.id_rsa.pub') }}"
+
+    - authorized_key:
+        user: da
+        key: "{{ user_key }}"

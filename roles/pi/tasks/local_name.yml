@@ -1,0 +1,4 @@
+---
+
+- name: 'Installing avahi-daemon to enable {{hostname}}.local address'
+  action: apt name=avahi-daemon state=present
